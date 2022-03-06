@@ -63,12 +63,27 @@ export default function App() {
     } catch (err) {}
   };
 
+  const finishToDo = async (key, finished) => {
+    const newToDos = {
+      ...toDos,
+    };
+
+    try {
+      newToDos[key].finished = finished;
+      setToDos(newToDos);
+      await saveToDos(newToDos);
+    } catch (err) {}
+  };
+
   const addToDo = async () => {
     if (text === "") {
       return;
     }
 
-    const newToDos = { ...toDos, [Date.now()]: { text, working } };
+    const newToDos = {
+      ...toDos,
+      [Date.now()]: { text, working, finished: false },
+    };
 
     await saveToDos(newToDos);
     setToDos(newToDos);
@@ -131,6 +146,15 @@ export default function App() {
         {Object.keys(toDos).map((key) =>
           toDos[key].working === working ? (
             <View key={key} style={styles.toDo}>
+              {toDos[key].finished ? (
+                <TouchableOpacity onPress={() => finishToDo(key, false)}>
+                  <Fontisto name="checkbox-active" size={18} color="white" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={() => finishToDo(key, true)}>
+                  <Fontisto name="checkbox-passive" size={18} color="white" />
+                </TouchableOpacity>
+              )}
               <Text style={styles.toDoText}>{toDos[key].text}</Text>
               <TouchableOpacity onPress={() => deleteToDo(key)}>
                 <Fontisto name="trash" size={18} color="white" />
