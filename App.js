@@ -8,6 +8,7 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  Platform,
 } from "react-native";
 
 import { Fontisto } from "@expo/vector-icons";
@@ -59,7 +60,9 @@ export default function App() {
   const loadToDos = async () => {
     try {
       const s = await AsyncStorage.getItem(STORAGE_TODOS_KEY);
-      setToDos(JSON.parse(s));
+      if (s) {
+        setToDos(JSON.parse(s));
+      }
     } catch (err) {}
   };
 
@@ -91,20 +94,32 @@ export default function App() {
   };
 
   const deleteToDo = async (key) => {
-    Alert.alert("Delete To Do?", "Are you sure?", [
-      { text: "Cancel" },
-      {
-        text: "I'm sure",
-        onPress: async () => {
-          const newToDos = { ...toDos };
-          try {
-            delete newToDos[key];
-            setToDos(newToDos);
-            await saveToDos(newToDos);
-          } catch (err) {}
+    if (Platform.OS === "web") {
+      const ok = confirm("Do you want to delete this To Do?");
+      if (ok) {
+        const newToDos = { ...toDos };
+        try {
+          delete newToDos[key];
+          setToDos(newToDos);
+          saveToDos(newToDos);
+        } catch (err) {}
+      }
+    } else {
+      Alert.alert("Delete To Do?", "Are you sure?", [
+        { text: "Cancel" },
+        {
+          text: "I'm sure",
+          onPress: async () => {
+            const newToDos = { ...toDos };
+            try {
+              delete newToDos[key];
+              setToDos(newToDos);
+              saveToDos(newToDos);
+            } catch (err) {}
+          },
         },
-      },
-    ]);
+      ]);
+    }
   };
 
   useEffect(() => {
